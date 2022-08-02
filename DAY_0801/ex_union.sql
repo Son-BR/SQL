@@ -79,3 +79,86 @@ where a.first_name like 'J%' and a.last_name like 'D%';
 # =========================================================
 
 # intersect 연산자
+# MySQL 8.0 버전에서 지원 안함
+# inner join으로 동일한 결과를 얻을 수 있음
+
+select c.first_name, c.last_name
+from customer as c
+inner join actor as a
+    on (c.first_name = a.first_name)
+        and (c.last_name = a.last_name);
+
+
+select c.first_name, c.last_name
+from customer as c
+inner join actor as a
+    on (c.first_name = a.first_name)
+        and (c.last_name = a.last_name)
+where a.first_name like 'J%' and a.last_name like 'D%';
+
+# ------------------------------------------------------
+
+# 집합 연산 규칙
+
+# =====================================================
+
+# 복합 쿼리의 결과 정렬
+# order by 절을 쿼리 마지막에 추가
+
+select a.first_name as fname, a.last_name as lname
+from actor as a
+where a.first_name like 'J%' and a.last_name like 'D%'
+union all
+select c.first_name, c.last_name
+from customer as c
+where c.first_name like 'J%' and c.last_name like 'D%'
+# 복합쿼리의 열이름
+order by lname, fname;
+
+# 열 이름 정의는 복합 쿼리의 첫 번째 쿼리에 있는 열의 이름을 사용해야 함
+# 복합쿼리에 없는 열이름 -> 예외발생
+select a.first_name as fname, a.last_name as lname
+from actor as a
+where a.first_name like 'J%' and a.last_name like 'D%'
+union all
+select c.first_name, c.last_name
+from customer as c
+where c.first_name like 'J%' and c.last_name like 'D%'
+order by last_name, first_name;
+
+# =====================================================
+
+# 집합 연산의 순서
+# 복합 쿼리는 위에서 아래의 순서대로 실행
+# 예외 : intersect 연산자(union, union all...)가 다른 집합 연산자보다 우선 순위가 높음
+# 집합 연산의 순서에 따라 연산 결과는 달라집
+
+# 1)
+select a.first_name, a.last_name
+from actor as a
+where a.first_name like 'J%' and a.last_name like 'D%'
+
+# 2) 중복 허용
+union all
+select a.first_name, a.last_name
+from actor as a
+where a.first_name like 'M%' and a.last_name like 'T%'
+
+# 3) 중복 허용 x
+union
+select c.first_name, c.last_name
+from customer as c
+where c.first_name like 'J%' and c.last_name like 'D%';
+
+# ----------------------------------------------------------
+
+# 학습 점검
+
+# 성이 L로 시작하는 모든 배우와 고객의 이름과 성을 찾는 복합 쿼리 작성
+
+select first_name, last_name from actor
+where last_name like 'L%'
+
+UNION
+SELECT first_name, last_name from customer
+where last_name like 'L%';
